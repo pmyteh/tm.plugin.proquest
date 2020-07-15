@@ -83,14 +83,6 @@ readProQuest <- function() {
     slug_lookup_tab <- slugs[!is.na(slugs)] %>%
       sapply(get_from_nodes_by_slug, USE.NAMES=TRUE)
 
-    # Fix "Abstract", where the text is actually in the subsequent node
-    if ("Abstract" %in% slugs && is.na(slugs[which(slugs=="Abstract")+1])) {
-      slug_lookup_tab["Abstract"] <- nodes[which(slugs=="Abstract")+1] %>%
-        xml_text(trim=TRUE)
-    } else {
-      warning(m[["id"]], ": Unable to parse Abstract chunk")
-    }
-
     # TODO: The slug values could be abstracted through a lookup table to handle
     # multiple languages instead of English only.
     do_slug_lookup <- function(slug) {
@@ -106,6 +98,19 @@ readProQuest <- function() {
         strsplit('; *') %>%
         unlist %>%
         as.character
+    }
+
+    extract_datetime <- function(s) {
+      # "May 08, 2012"
+      dt <- parse_date_time(s, "bdY", quiet=TRUE)
+      if(is.na(dt)) {
+        # Try harder, by stripping the spaces out. This can fix
+        # some of the problems found (e.g. "Jan 11, 2 009" parses
+        # fine as "Jan11,2009").
+        s <- gsub(' ', '', s)
+        dt <- parse_date_time(s, "bdY")
+      }
+      dt
     }
 
     m[["origin"]] <- do_slug_lookup("Publication title")
@@ -126,10 +131,26 @@ readProQuest <- function() {
       gsub('^Name: *', '', .)
     m[["rights"]] <- do_slug_lookup("Copyright")
     m[["datetimestamp"]] <- do_slug_lookup("Publication date") %>%
-      parse_date_time("bdY") # "May 8, 2010"
+      extract_datetime
     m[["publisher"]] <- do_slug_lookup("Publisher")
     m[["page"]] <- do_slug_lookup("Pages")
 
+    # "Abstract" is a bit more involved, as the text may actually be in the
+    # subsequent node.
+    m[["intro"]] <- if ("Abstract" %in% slugs) {
+      if (do_slug_lookup("Abstract") == "None available.") {
+        character(0)
+      } else if (is.na(slugs[which(slugs=="Abstract")+1])) {
+        nodes[which(slugs=="Abstract")+1] %>%
+          xml_text(trim=TRUE)
+      } else {
+        warning(m[["id"]], ": Can't find Abstract content.")
+        character(0)
+      }
+    } else {
+      warning(m[["id"]], ": No Abstract chunk.")
+      character(0)
+    }
 
     #####
     # 4: Ensure extracted items are sensible

@@ -1,4 +1,4 @@
-test_that("document 1 correctness", {
+test_that("document 1 is fully correct", {
   library(lubridate)
   doc <- system.file("html", "sample-1.html",
                      package = "tm.plugin.proquest") %>%
@@ -69,4 +69,13 @@ test_that("document 1 correctness", {
                  "--",
                  "nathan.olivarezgiles@latimes.com")
                )
+})
+
+test_that("specific parsing issues are solved", {
+  corp <- system.file("emls", "sample.eml",
+                      package = "tm.plugin.proquest") %>%
+    ProQuestSource %>%
+    VCorpus
+  expect_equal(meta(corp[["MSTAR_422291783"]], "intro"),
+               character(0))
 })

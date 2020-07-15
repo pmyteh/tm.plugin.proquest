@@ -52,7 +52,7 @@ readProQuest <- function() {
     # Corrections need to be extracted from the bodytext
     correlems <- grep('^CORRECTION: ', bodytext)
     m[["correction"]] <- bodytext[correlems] %>%
-      gsub('^CORRECTION: *', '', .)
+      gsub('^CORRECTION: *(SEE CORRECTION APPENDED; )?', '', .)
     if (any(correlems)) bodytext <- bodytext[-correlems]
 
     # Trim empty and spurious nodes

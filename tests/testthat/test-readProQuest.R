@@ -78,4 +78,8 @@ test_that("specific parsing issues are solved", {
     VCorpus
   expect_equal(meta(corp[["MSTAR_422291783"]], "intro"),
                character(0))
+  expect_equal(meta(corp[["MSTAR_422398973"]], "correction"),
+               "Crocker Club: An article in Friday's Calendar about the Crocker Club in downtown L.A. said Vincent Terzian is its sole owner. Thomas Turner is a co-owner of the lounge.")
+  expect_equal(meta(corp[["MSTAR_422282572"]], "graphic"),
+               "Caption: PHOTO: REACTION: Rep. Carolyn Maloney praised Bank of America for its new overdraft policy.; PHOTOGRAPHER:Alex Wong Getty Images")
 })

@@ -169,6 +169,9 @@ readProQuest <- function() {
       integer(0)
     }
 
+    # For consistency with other tm.plugin.*, a non-bylined article is
+    # character(0)
+    m[["author"]] <- if(!identical(m[["author"]], "Anonymous")) m[["author"]] else character(0)
 
     #####
     # 5: Generate and return a PlainTextDocument

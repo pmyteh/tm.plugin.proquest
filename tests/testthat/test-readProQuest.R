@@ -82,4 +82,14 @@ test_that("specific parsing issues are solved", {
                "Crocker Club: An article in Friday's Calendar about the Crocker Club in downtown L.A. said Vincent Terzian is its sole owner. Thomas Turner is a co-owner of the lounge.")
   expect_equal(meta(corp[["MSTAR_422282572"]], "graphic"),
                "Caption: PHOTO: REACTION: Rep. Carolyn Maloney praised Bank of America for its new overdraft policy.; PHOTOGRAPHER:Alex Wong Getty Images")
+
+  count_missing <- function(field) {
+    meta(corp, field) %>%
+      sapply(identical, character(0)) %>%
+      which %>%
+      length
+  }
+  expect_equal(count_missing("heading"), 0)
+  # "Anonymous" should be converted to character(0) and hence be missing
+  expect_equal(count_missing("author"), 27)
 })

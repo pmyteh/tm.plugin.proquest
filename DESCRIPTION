@@ -13,7 +13,9 @@ Imports:
     magrittr,
     assertthat,
     emayili,
-    xml2
+    xml2,
+    glue,
+    ISOcodes
 Depends: 
     tm (>= 0.6)
 Suggests: 
@@ -25,5 +27,5 @@ LazyData: true
 URL: http://github.com/pmyteh/tm.plugin.proquest
 BugReports: http://github.com/pmyteh/tm.plugin.proquest/issues
 Encoding: UTF-8
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)

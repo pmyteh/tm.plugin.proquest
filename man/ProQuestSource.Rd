@@ -11,7 +11,7 @@ ProQuestSource(x)
 }
 \value{
 An object of class \code{ProQuestSource}, inheriting from
-\link[tm:SimpleSource]{tm::SimpleSource}.
+\link[tm:Source]{tm::SimpleSource}.
 }
 \description{
 Constructs a Source to handle documents sent by email from
@@ -34,6 +34,9 @@ available), the document date (drawn from the input file's \code{modtime},
 failing that \code{firstpubtime}, failing that \code{fetchtime}, failing that the
 current date with a warning), the document's sequence number in the input
 file, and an 8 character MD5 digest of the document's metadata list.
+
+Note that an attempt is made to handle forwarded emails (rather than those
+directly from ProQuest) but this may well not be successful.
 }
 \examples{
 \dontrun{

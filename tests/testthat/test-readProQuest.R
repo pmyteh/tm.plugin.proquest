@@ -93,3 +93,18 @@ test_that("specific parsing issues are solved", {
   # "Anonymous" should be converted to character(0) and hence be missing
   expect_equal(count_missing("author"), 27)
 })
+
+test_that("forwarded emails parse", {
+  corp <- system.file("emls", "forwarded.eml",
+                      package = "tm.plugin.proquest") %>%
+    ProQuestSource %>%
+    VCorpus
+
+  count_missing <- function(field) {
+    meta(corp, field) %>%
+      sapply(identical, character(0)) %>%
+      which %>%
+      length
+  }
+  expect_equal(count_missing("heading"), 0)
+})

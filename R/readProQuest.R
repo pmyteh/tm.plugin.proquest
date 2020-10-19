@@ -119,7 +119,7 @@ readProQuest <- function() {
     m[["type"]] <- do_slug_lookup("Document type")
     m[["section"]] <- do_slug_lookup("Section")
     m[["language"]] <- do_slug_lookup("Language of publication") %>%
-      standardiseLanguage
+      standardiseLanguage(m[["id"]])
     m[["intro"]] <- do_slug_lookup("Abstract")
     m[["subject"]] <- do_slug_lookup("Subject") %>%
       split_chunk

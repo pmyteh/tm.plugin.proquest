@@ -151,6 +151,8 @@ ProQuestSource <- function(x) {
   xml_remove(xml_find_first(html_body, './div[@class="mainCopyBlock"]'))
   # Remove leading "Email x of y"
   xml_remove(xml_find_first(html_body, './p[contains(text(), "Email")]'))
+  # Remove bibliography, if present
+  xml_remove(xml_find_first(html_body, './div[a[@name="Bibliography"]]'))
   # Remove trailing copyright footer
   xml_remove(xml_find_first(html_body, './div[@class="copyright"]'))
 

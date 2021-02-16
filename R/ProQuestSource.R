@@ -36,6 +36,7 @@
 #'}
 #'@import xml2
 #'@import magrittr
+#'@importFrom utils head tail
 #'@importFrom tm getElem
 #'@importFrom assertthat assert_that
 #'@importFrom glue glue

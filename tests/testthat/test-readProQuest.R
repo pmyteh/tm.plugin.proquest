@@ -1,6 +1,6 @@
 test_that("document 1 is fully correct", {
   library(lubridate)
-  doc <- system.file("html", "sample-1.html",
+  doc <- system.file("htmlfiles", "sample-1.html",
                      package = "tm.plugin.proquest") %>%
     readLines %>%
     paste0(collapse="\n") %>%

@@ -5,6 +5,7 @@
 #' @seealso [ProQuestSource]
 #' @import xml2
 #' @import magrittr
+#' @importFrom utils head tail
 #' @importFrom tm PlainTextDocument
 #' @importFrom lubridate parse_date_time
 #' @export

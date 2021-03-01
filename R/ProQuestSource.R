@@ -100,7 +100,7 @@ ProQuestSource <- function(x) {
   # We extract the inner HTML document by pulling pulling out the first section,
   # undoing the quoted-printable line continuations ('=' at EOL) while adding
   # explicit newlines to the other lines, and then undoing all the remaining
-  # quoted-printable encoding using emayili::qp_decode().
+  # quoted-printable encoding using qp_decode().
   #
   # We should probably search for the main content section rather than asserting
   # that it's the first section.
@@ -128,7 +128,7 @@ ProQuestSource <- function(x) {
   html_doc <- rawemail[part_body_start:(part_boundaries[current_part+1]-1)] %>%
     gsub("([^=])$", '\\1\n', .) %>%
     gsub("=$", "", .) %>%
-    emayili::qp_decode() %>%
+    qp_decode() %>%
     paste0(collapse="") %>%
     read_html
 

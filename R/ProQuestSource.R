@@ -105,27 +105,32 @@ ProQuestSource <- function(x) {
   # We should probably search for the main content section rather than asserting
   # that it's the first section.
 
-  current_part <- 1
-  working_boundary <- part_boundaries[current_part]
+  for (i in seq_along(head(part_boundaries, length(part_boundaries)-1))) {
+    working_boundary <- part_boundaries[i]
 
-  part_body_start <- rawemail[working_boundary:length(rawemail)] %>%
-    grep('^$', .) %>%
-    head(1) %>%
-    `+`(working_boundary)
+    part_body_start <- rawemail[working_boundary:length(rawemail)] %>%
+      grep('^$', .) %>%
+      head(1) %>%
+      `+`(working_boundary)
 
-  part_header <- rawemail[(working_boundary+1):(part_body_start-2)]
+    part_header <- rawemail[(working_boundary+1):(part_body_start-2)]
 
-  assert_that(any(grepl('Content-Type: text/html',
-                        part_header,
-                        fixed=TRUE)
-                  ),
-              any(grepl('Content-Transfer-Encoding: quoted-printable',
-                        part_header,
-                        fixed=TRUE)
-                  )
-  )
+    part_body <- rawemail[part_body_start:(part_boundaries[i+1]-1)]
 
-  html_doc <- rawemail[part_body_start:(part_boundaries[current_part+1]-1)] %>%
+    if(any(grepl('Content-Type: text/html',
+                 part_header,
+                 fixed=TRUE)
+      ) &&
+      any(grepl('Content-Transfer-Encoding: quoted-printable',
+                part_header,
+                fixed=TRUE)
+      ) &&
+      length(part_body) > 10
+    ) break
+    warning(glue("{x}: Couldn't find a suitable text/html section; trying with the last segment."))
+  }
+
+  html_doc <- part_body %>%
     gsub("([^=])$", '\\1\n', .) %>%
     gsub("=$", "", .) %>%
     qp_decode() %>%
@@ -137,14 +142,18 @@ ProQuestSource <- function(x) {
   } else xml_find_first(html_doc, 'head')
 
   html_body <- if (probably_forwarded) {
-    xml_find_first(html_doc, '//blockquote/div/div[table]')
+    xml_find_first(html_doc, '//blockquote//div[table]')
   } else xml_find_first(html_doc, 'body')
 
-  xml_find_all(html_head, './meta') %>%
-    xml_attr('content') %>%
-    grepl('^Apache Tapestry Framework', .) %>%
-    any %>%
-    assert_that(msg=glue("{x}: Can't find the <meta> tag at the start of the documents"))
+  # have_meta <- xml_find_all(html_head, './meta') %>%
+  #   xml_attr('content') %>%
+  #   grepl('^Apache Tapestry Framework', .) %>%
+  #   any
+  #
+  # if (!have_meta) {
+  #   warning(glue("{x}: Can't find the <meta> tag at the start of the documents"))
+  #   browser()
+  # }
 
   # Remove copyright header
   xml_remove(xml_find_first(html_body, './table'))
@@ -161,6 +170,10 @@ ProQuestSource <- function(x) {
   # vector of textual representations of them.
   content <- xml_find_all(html_body, './div') %>%
     sapply(as.character)
+
+  if (length(content) < 2) {
+    warning(x, ": Unable to find content (or only one document in the file")
+  }
 
   tm::SimpleSource(encoding='UTF-8', length=length(content), content=content,
                    uri=x, reader=readProQuest, class="ProQuestSource")

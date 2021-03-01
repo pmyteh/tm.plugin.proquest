@@ -25,6 +25,13 @@ standardiseLanguage <- function(v, tid) {
       pos <- head(grep(tolower(langstr), tolower(ISO_639_2[!is.na(ISO_639_2$Alpha_2),][["Name"]]), fixed=TRUE), n=1L)
       if (length(pos) > 0 && !is.na(pos)) lang <- ISO_639_2[!is.na(ISO_639_2$Alpha_2),]$Alpha_2[pos]
     }
+    # ProQuest sometimes mangles the language string by inserting extra spaces.
+    # Before giving up, try stripping all the spaces out of the string and trying again
+    if(is.na(lang)) {
+      lang <- ISO_639_2[match(tolower(gsub("[ \u00a0]", "", langstr)),
+                              tolower(ISO_639_2[["Name"]])),
+                        "Alpha_2"]
+    }
     if(is.na(lang)) {
       warning("Unable to parse language for ", tid, ": ", langstr, ".\n")
       lang <- tolower(langstr)

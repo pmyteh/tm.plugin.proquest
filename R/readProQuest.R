@@ -71,7 +71,7 @@ readProQuest <- function() {
     # Make a lookup table for the rest, which can be extracted by tag
     slugs <- lapply(nodes, xml_find_first, 'strong') %>%
       sapply(xml_text) %>%
-      gsub(': *$', '', .)
+      gsub(':[ \u00a0]*$', '', .)
 
     get_from_nodes_by_slug <- function(slug) {
       if (slug %in% slugs) {
@@ -87,11 +87,48 @@ readProQuest <- function() {
     # TODO: The slug values could be abstracted through a lookup table to handle
     # multiple languages instead of English only.
     do_slug_lookup <- function(slug) {
-      if (slug %in% names(slug_lookup_tab)) {
-        unname(slug_lookup_tab[slug])
-      } else {
-        character(0)
+      trim_string <- function(s) {
+        s %>%
+          gsub('^[ \u00a0]*', '', .) %>%
+          gsub('[ \u00a0]*$', '', .)
       }
+
+      if (slug %in% names(slug_lookup_tab)) {
+        return(trim_string(unname(slug_lookup_tab[slug])))
+      }
+
+      # Try harder :-(
+      #
+      # There is a persistent problem with random missing spaces in (our parses
+      # of) the files that come out of ProQuest. That means that we should try
+      # variations on a theme. If we don't find a lookup, and the slug contains
+      # spaces, we delete each in turn until we find one that works. Only if
+      # they all fail do we give up. Note that this is not robust to two spaces
+      # being missing (unlikely?)
+      # if (grepl(' ', slug) && rec==FALSE) {
+      #   for (spos in gregexpr(' ', slug)[[1]]) {
+      #     newslug <- paste0(substr(slug, 1, spos-1),
+      #                       substr(slug, spos+1, nchar(slug)))
+      #     if (newslug %in% names(slug_lookup_tab)) {
+      #       return(trim_string(unname(slug_lookup_tab[newslug])))
+      #     }
+      #   }
+      # }
+
+      # In fact, this probably works better: simply stripping all spaces and
+      # checking against a space-stripped version of the slug table.
+
+      # Slightly inefficient redoing this every time.
+      newslug <- gsub(' ', '', slug)
+      new_slug_lookup_tab <- slug_lookup_tab
+      names(new_slug_lookup_tab) <- gsub(' ', '', names(new_slug_lookup_tab))
+
+      if (newslug %in% names(new_slug_lookup_tab)) {
+        return(trim_string(unname(new_slug_lookup_tab[newslug])))
+      }
+
+
+      character(0)
     }
 
     split_chunk <- function(s) {
@@ -104,6 +141,9 @@ readProQuest <- function() {
     extract_datetime <- function(s) {
       # "May 08, 2012"
       dt <- parse_date_time(s, "bdY", quiet=TRUE)
+      if(length(dt) == 0) {
+        return(integer())
+      }
       if(is.na(dt)) {
         # Try harder, by stripping the spaces out. This can fix
         # some of the problems found (e.g. "Jan 11, 2 009" parses
@@ -139,17 +179,45 @@ readProQuest <- function() {
     # "Abstract" is a bit more involved, as the text may actually be in the
     # subsequent node.
     m[["intro"]] <- if ("Abstract" %in% slugs) {
-      if (do_slug_lookup("Abstract") == "None available.") {
+      if (do_slug_lookup("Abstract") %in% c("None available.", "Noneavailable.")) {
         character(0)
       } else if (is.na(slugs[which(slugs=="Abstract")+1])) {
         nodes[which(slugs=="Abstract")+1] %>%
           xml_text(trim=TRUE)
       } else {
-        warning(m[["id"]], ": Can't find Abstract content.")
-        character(0)
+        # TODO: Some of the files have strange parse trees that look like this:
+        #
+        # <p style="margin-bottom:5pt; margin-top:0; margin-right:0; margin-left:0; padding:0;">
+        #   <strong>Abstract:  </strong>
+        # </p>"The wage gap seems to be stuck," said Vicki Shabo, vice [rest of line]
+        #Only in two occupational categories =E2=80=94 =E2=80=9Cdining [rest of line]
+        #[...]persistent pay gaps are less about pay and more about [rest of line]
+        #  <div style="clear:both"></div>
+
+        # Here, the abstract text is neither in the same node as the heading,
+        # nor in the 'next' node in the list: It's outside the surrounding
+        # paragraph tag. If all else fails (which it has, if we're here) then we
+        # should maybe try to parse from there.
+        #
+        # Note, though, that the HTML here is not valid, so isn't properly
+        # parsed by xml2. That means that if we *do* do it, we're going to be
+        # regexing it from the original textual representation, with something
+        # like the following:
+        if (grepl('<strong>Abstract:[ \u00a0]*</strong></p>.*<div', elem$content)) {
+          temp <- gsub('^.*<strong>Abstract:[ \u00a0]*</strong></p>', '', elem$content) %>%
+            gsub('<div.*', '', .)
+#          warning(m[["id"]],
+#                  ": Broken Abstract chunk. Extracted the following:\n",
+#                  temp,
+#                  "\n")
+          temp
+        } else {
+          warning(m[["id"]], ": Can't find Abstract content.\n")
+          character(0)
+        }
       }
     } else {
-      warning(m[["id"]], ": No Abstract chunk.")
+      warning(m[["id"]], ": No Abstract chunk.\n")
       character(0)
     }
 
@@ -169,6 +237,9 @@ readProQuest <- function() {
       warning(m[["id"]], ": No wordcount found.\n")
       integer(0)
     }
+
+    if (length(m['datetime']) == 0) warning(glue("{m['id']}: Can't extract datetime.\n"))
+    if (length(m['language']) == 0) warning(glue("{m['id']}: Can't extract language.\n"))
 
     # For consistency with other tm.plugin.*, a non-bylined article is
     # character(0)

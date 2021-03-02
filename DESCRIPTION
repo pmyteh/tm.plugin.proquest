@@ -13,6 +13,7 @@ Imports:
     magrittr,
     assertthat,
     stringi,
+    stringr,
     xml2,
     glue,
     ISOcodes

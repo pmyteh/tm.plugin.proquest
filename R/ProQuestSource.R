@@ -40,6 +40,7 @@
 #'@importFrom tm getElem
 #'@importFrom assertthat assert_that
 #'@importFrom glue glue
+#'@importFrom stringr str_count
 #'@export
 ProQuestSource <- function(x) {
   rawemail <- readLines(x, encoding="UTF-8")
@@ -130,12 +131,17 @@ ProQuestSource <- function(x) {
     warning(glue("{x}: Couldn't find a suitable text/html section; trying with the last segment."))
   }
 
-  html_doc <- part_body %>%
+  html_txt <- part_body %>%
     gsub("([^=])$", '\\1\n', .) %>%
     gsub("=$", "", .) %>%
     qp_decode() %>%
-    paste0(collapse="") %>%
-    read_html
+    paste0(collapse="")
+
+  # Before we go, take an *estimate* of the number of articles that are present
+  # in the raw email, so we can check for possible extraction errors later.
+  # This may not be accurate: it works for all the documents I have but YMMV.
+  num_articles <- stringr::str_count(html_txt, 'DocID_MSTAR_')
+  html_doc <- read_html(html_txt)
 
   html_head <- if (probably_forwarded) {
     xml_find_first(html_doc, '//blockquote/div')
@@ -171,8 +177,9 @@ ProQuestSource <- function(x) {
   content <- xml_find_all(html_body, './div') %>%
     sapply(as.character)
 
-  if (length(content) < 2) {
-    warning(x, ": Unable to find content (or only one document in the file")
+  if (length(content) != num_articles) {
+    warning(x, ": Found ", num_articles, " ID numbers but extracted ",
+            length(content), " articles.\n")
   }
 
   tm::SimpleSource(encoding='UTF-8', length=length(content), content=content,

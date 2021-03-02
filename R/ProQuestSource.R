@@ -135,7 +135,14 @@ ProQuestSource <- function(x) {
     gsub("([^=])$", '\\1\n', .) %>%
     gsub("=$", "", .) %>%
     qp_decode() %>%
-    paste0(collapse="")
+    paste0(collapse="") %>%
+    # A few of the embedded HTML documents containing articles are mangled, and
+    # invalid. They have a missing <html> tag. The parser then cheerfully pairs
+    # off the closing </html> tag for the article with the opening <html> of the
+    # *whole set of documents*, dropping any articles after the malformed one.
+    #
+    # This is a grotty fix to a grotty piece of encoding.
+    gsub(">html&gt;<head", "><html><head", ., fixed=TRUE)
 
   # Before we go, take an *estimate* of the number of articles that are present
   # in the raw email, so we can check for possible extraction errors later.

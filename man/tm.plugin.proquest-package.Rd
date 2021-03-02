@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Tom Nicholls \email{tom.nicholls@bsg.ox.ac.uk} (\href{https://orcid.org/0000-0002-6971-8614}{ORCID})
+\strong{Maintainer}: Tom Nicholls \email{T.E.Nicholls@liverpool.ac.uk} (\href{https://orcid.org/0000-0002-6971-8614}{ORCID})
 
 }
 \keyword{internal}

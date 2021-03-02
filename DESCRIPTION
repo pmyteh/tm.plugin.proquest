@@ -1,11 +1,11 @@
 Package: tm.plugin.proquest
 Title: Import Articles from ProQuest Using the 'tm' Text Mining Framework
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: 
     person(given = "Tom",
            family = "Nicholls",
            role = c("aut", "cre"),
-           email = "tom.nicholls@bsg.ox.ac.uk",
+           email = "T.E.Nicholls@liverpool.ac.uk",
            comment = c(ORCID = "0000-0002-6971-8614"))
 Imports:
     digest,

@@ -238,8 +238,13 @@ readProQuest <- function() {
       integer(0)
     }
 
-    if (length(m['datetime']) == 0) warning(glue("{m['id']}: Can't extract datetime.\n"))
-    if (length(m['language']) == 0) warning(glue("{m['id']}: Can't extract language.\n"))
+    if (length(m[["datetimestamp"]]) == 0) warning(glue("{m[['id']]}: Can't extract datetime.\n"))
+    if (length(m[["language"]]) == 0) {
+      if (length(language) == 1) {
+        m[["language"]] <- language
+        warning(glue("{m[['id']]}: Can't extract language. Falling back to '{m['language']}'.\n"))
+      } else warning(glue("{m[['id']]}: Can't extract language.\n"))
+    }
 
     # For consistency with other tm.plugin.*, a non-bylined article is
     # character(0)

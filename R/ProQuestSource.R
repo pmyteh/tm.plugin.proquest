@@ -168,20 +168,21 @@ ProQuestSource <- function(x) {
   #   browser()
   # }
 
-  # Remove copyright header
-  xml_remove(xml_find_first(html_body, './table'))
-  # Remove "John Smith sent the following"
-  xml_remove(xml_find_first(html_body, './div[@class="mainCopyBlock"]'))
-  # Remove leading "Email x of y"
-  xml_remove(xml_find_first(html_body, './p[contains(text(), "Email")]'))
-  # Remove bibliography, if present
-  xml_remove(xml_find_first(html_body, './div[a[@name="Bibliography"]]'))
+  # # Remove copyright header
+  # xml_remove(xml_find_first(html_body, './table'))
+  # # Remove "John Smith sent the following"
+  # xml_remove(xml_find_first(html_body, './div[@class="mainCopyBlock"]'))
+  # # Remove leading "Email x of y"
+  # xml_remove(xml_find_first(html_body, './p[contains(text(), "Email")]'))
+  # # Remove bibliography, if present
+  # xml_remove(xml_find_first(html_body, './div[a[@name="Bibliography"]]'))
   # Remove trailing copyright footer
-  xml_remove(xml_find_first(html_body, './div[@class="copyright"]'))
+  xml_remove(xml_find_first(html_body, '//div[@class="copyright"]'))
+  xml_remove(xml_find_first(html_body, '//div[@class="headerTextContainer"]'))
 
   # The remaining top-level <div>s represent individual documents. Build a
   # vector of textual representations of them.
-  content <- xml_find_all(html_body, './div') %>%
+  content <- xml_find_all(html_body, '//div//td/div') %>%
     sapply(as.character)
 
   if (length(content) != num_articles) {

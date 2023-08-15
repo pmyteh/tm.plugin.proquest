@@ -177,12 +177,12 @@ ProQuestSource <- function(x) {
   # # Remove bibliography, if present
   # xml_remove(xml_find_first(html_body, './div[a[@name="Bibliography"]]'))
   # Remove trailing copyright footer
-  xml_remove(xml_find_first(html_body, '//div[@class="copyright"]'))
-  xml_remove(xml_find_first(html_body, '//div[@class="headerTextContainer"]'))
+  # xml_remove(xml_find_first(html_body, '//div[@class="copyright"]'))
+  # xml_remove(xml_find_first(html_body, '//div[@class="headerTextContainer"]'))
 
   # The remaining top-level <div>s represent individual documents. Build a
   # vector of textual representations of them.
-  content <- xml_find_all(html_body, '//div//td/div') %>%
+  content <- xml_find_all(html_body, '//div[a[contains(@name, "DocID_MSTAR")]]') %>%
     sapply(as.character)
 
   if (length(content) != num_articles) {

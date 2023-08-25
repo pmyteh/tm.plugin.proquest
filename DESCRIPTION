@@ -1,6 +1,6 @@
 Package: tm.plugin.proquest
 Title: Import Articles from ProQuest Using the 'tm' Text Mining Framework
-Version: 1.0.1
+Version: 1.1.0
 Authors@R: 
     person(given = "Tom",
            family = "Nicholls",

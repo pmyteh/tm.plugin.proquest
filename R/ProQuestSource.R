@@ -150,37 +150,15 @@ ProQuestSource <- function(x) {
   num_articles <- stringr::str_count(html_txt, 'DocID_MSTAR_')
   html_doc <- read_html(html_txt)
 
-  html_head <- if (probably_forwarded) {
-    xml_find_first(html_doc, '//blockquote/div')
-  } else xml_find_first(html_doc, 'head')
-
+  # html_head <- if (probably_forwarded) {
+  #   xml_find_first(html_doc, '//blockquote/div')
+  # } else xml_find_first(html_doc, 'head')
+  #
   html_body <- if (probably_forwarded) {
     xml_find_first(html_doc, '//blockquote//div[table]')
   } else xml_find_first(html_doc, 'body')
 
-  # have_meta <- xml_find_all(html_head, './meta') %>%
-  #   xml_attr('content') %>%
-  #   grepl('^Apache Tapestry Framework', .) %>%
-  #   any
-  #
-  # if (!have_meta) {
-  #   warning(glue("{x}: Can't find the <meta> tag at the start of the documents"))
-  #   browser()
-  # }
-
-  # # Remove copyright header
-  # xml_remove(xml_find_first(html_body, './table'))
-  # # Remove "John Smith sent the following"
-  # xml_remove(xml_find_first(html_body, './div[@class="mainCopyBlock"]'))
-  # # Remove leading "Email x of y"
-  # xml_remove(xml_find_first(html_body, './p[contains(text(), "Email")]'))
-  # # Remove bibliography, if present
-  # xml_remove(xml_find_first(html_body, './div[a[@name="Bibliography"]]'))
-  # Remove trailing copyright footer
-  # xml_remove(xml_find_first(html_body, '//div[@class="copyright"]'))
-  # xml_remove(xml_find_first(html_body, '//div[@class="headerTextContainer"]'))
-
-  # The remaining top-level <div>s represent individual documents. Build a
+  # <div>s with ID number names represent individual documents. Build a
   # vector of textual representations of them.
   content <- xml_find_all(html_body, '//div[a[contains(@name, "DocID_MSTAR")]]') %>%
     sapply(as.character)
